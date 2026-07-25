@@ -3,13 +3,15 @@ setlocal EnableExtensions
 
 set "SOURCE=%~1"
 set "OUTPUT=%~2"
+set "BUILD=%~3"
 if not defined SOURCE set "SOURCE=%~dp0"
 if not defined OUTPUT set "OUTPUT=%~dp0bin"
 
-rem Resolve the source directory to an absolute path without a trailing slash.
+rem Resolve every directory to an absolute path without a trailing slash.
 for %%I in ("%SOURCE%\.") do set "SOURCE=%%~fI"
 for %%I in ("%OUTPUT%\.") do set "OUTPUT=%%~fI"
-set "BUILD=%SOURCE%\build-game"
+if not defined BUILD set "BUILD=%SOURCE%\build-game"
+for %%I in ("%BUILD%\.") do set "BUILD=%%~fI"
 
 where cmake >nul 2>nul || (
     echo ERROR: CMake was not found in PATH.
@@ -18,7 +20,7 @@ where cmake >nul 2>nul || (
 
 if exist "%BUILD%" rmdir /S /Q "%BUILD%"
 if exist "%BUILD%" (
-    echo ERROR: Could not remove the previous game build directory.
+    echo ERROR: Could not remove the previous game build directory: %BUILD%
     exit /b 1
 )
 
@@ -42,4 +44,5 @@ set "EXIT_CODE=%ERRORLEVEL%"
 if "%EXIT_CODE%"=="0" set "EXIT_CODE=1"
 if exist "%BUILD%" rmdir /S /Q "%BUILD%"
 echo ERROR: Minecraft build failed.
+echo Build directory: %BUILD%
 exit /b %EXIT_CODE%
