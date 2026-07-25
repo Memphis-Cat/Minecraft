@@ -34,9 +34,19 @@ if not exist "%OUTPUT%" mkdir "%OUTPUT%"
 copy /Y "%BUILD%\bin\Release\Minecraft.exe" "%OUTPUT%\Minecraft.exe" >nul
 if errorlevel 1 goto :error
 
+if not exist "%SOURCE%\assets\textures\blocks" (
+    echo ERROR: Texture assets are missing from %SOURCE%\assets
+    goto :error
+)
+
+if exist "%OUTPUT%\assets" rmdir /S /Q "%OUTPUT%\assets"
+xcopy "%SOURCE%\assets\*" "%OUTPUT%\assets" /E /I /Y /Q >nul
+if errorlevel 1 goto :error
+
 if exist "%BUILD%" rmdir /S /Q "%BUILD%"
 
 echo Built: %OUTPUT%\Minecraft.exe
+echo Assets: %OUTPUT%\assets
 exit /b 0
 
 :error
