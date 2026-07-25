@@ -69,9 +69,9 @@ The renderer loads the real PNG files from `bin\assets\textures\blocks` through 
 - Grass top: `grass_top.png`
 - Grass sides: `grass_side.png`
 - Dirt: `dirt.png`
+- Stone: `stone.png`
 - Bedrock: `bedrock.png`
 - Grass climate map: `grass.png` (256x256)
-- Stone: `stone.png` when present; a deterministic gray fallback is used until that file is added
 
 Grass tint uses the requested Minecraft lookup:
 
