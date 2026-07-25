@@ -1,5 +1,6 @@
 # CMake / Visual Studio
 /build*/
+/bin/
 /dist/
 /.vs/
 CMakeUserPresets.json
@@ -8,7 +9,7 @@ CMakeUserPresets.json
 *.VC.db
 *.VC.opendb
 
-# Launcher runtime folders
+# Legacy launcher runtime folders
 /source/
 /game/
 launcher-build.log
