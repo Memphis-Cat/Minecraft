@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-set "PROJECT_DIR=D:\VMAT"
+set "PROJECT_DIR=D:\Minecraft"
 
 cd /d "%PROJECT_DIR%"
 if errorlevel 1 (
