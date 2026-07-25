@@ -7,20 +7,38 @@ This repository contains two Windows executables:
 
 ## Build
 
-Install Visual Studio 2022 with **Desktop development with C++**, the Windows SDK, Git, and CMake. Run `build_all.bat`.
+Install Visual Studio 2022 with **Desktop development with C++**, the Windows SDK, Git, CMake, and Windows PowerShell. Run:
+
+```bat
+build_all.bat
+```
+
+The script builds both programs, copies them into one folder, removes the temporary CMake build folders, removes the legacy `dist` output, and creates a desktop shortcut named **Minecraft Launcher**.
 
 Outputs:
 
 ```text
-dist\Launcher.exe
-dist\game\Minecraft.exe
+bin\Launcher.exe
+bin\Minecraft.exe
 ```
 
-Start `dist\Launcher.exe`. Do not start the game executable directly.
+Start the desktop shortcut or `bin\Launcher.exe`. Do not start `Minecraft.exe` directly.
 
 ## Launcher/update design
 
-The launcher silently downloads `manifest.json` from `main` over HTTPS. It validates the schema, channel-key hash, RSA-PSS/SHA-256 signature, minimum launcher version, local release fields, and local game SHA-256. When an update is needed, it fetches the exact signed commit, performs a forced detached checkout, cleans generated files, runs `build_game.bat`, hashes the resulting game, writes `game\local_manifest.json`, and launches it. It never rebuilds itself.
+The launcher silently downloads `manifest.json` from `main` over HTTPS. It validates the schema, channel-key hash, RSA-PSS/SHA-256 signature, minimum launcher version, local release fields, and local game SHA-256.
+
+When an update is needed, the launcher:
+
+1. Fetches the exact signed source commit.
+2. Performs a forced clean checkout in `bin\source`.
+3. Runs that source revision's `build_game.bat`.
+4. Places the rebuilt game at `bin\Minecraft.exe`.
+5. Removes the temporary `build-game` folder.
+6. Hashes the resulting executable and writes `bin\local_manifest.json`.
+7. Starts the game with a short-lived one-time launch ticket.
+
+It never rebuilds or replaces `Launcher.exe`. A launcher update must be built manually with `build_all.bat` or `build_launcher.bat`.
 
 A hash embedded in a public client is not a true secret. The channel hash is only channel binding; trust comes from the asymmetric signature. Keep the private signing key outside this repository. The launcher-only gate is practical launch policy, not unbreakable DRM: it uses a per-user DPAPI-protected install secret and a short-lived one-time HMAC ticket.
 
