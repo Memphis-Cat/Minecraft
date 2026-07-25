@@ -1,9 +1,11 @@
 @echo off
 setlocal EnableExtensions
 
-set "ROOT=%~dp0"
-set "BUILD=%ROOT%build-launcher"
-set "BIN=%ROOT%bin"
+rem %~dp0 always ends in a backslash. Normalize through "." so quoted
+rem command-line arguments do not end with \ immediately before a quote.
+for %%I in ("%~dp0.") do set "ROOT=%%~fI"
+set "BUILD=%ROOT%\build-launcher"
+set "BIN=%ROOT%\bin"
 
 where cmake >nul 2>nul || (
     echo ERROR: CMake was not found in PATH.
@@ -11,6 +13,10 @@ where cmake >nul 2>nul || (
 )
 
 if exist "%BUILD%" rmdir /S /Q "%BUILD%"
+if exist "%BUILD%" (
+    echo ERROR: Could not remove the previous launcher build directory.
+    exit /b 1
+)
 
 cmake -S "%ROOT%" -B "%BUILD%" -A x64 -DMC_BUILD_LAUNCHER=ON -DMC_BUILD_GAME=OFF
 if errorlevel 1 goto :error
