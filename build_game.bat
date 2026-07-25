@@ -6,8 +6,9 @@ set "OUTPUT=%~2"
 if not defined SOURCE set "SOURCE=%~dp0"
 if not defined OUTPUT set "OUTPUT=%~dp0bin"
 
-for %%I in ("%SOURCE%") do set "SOURCE=%%~fI"
-for %%I in ("%OUTPUT%") do set "OUTPUT=%%~fI"
+rem Resolve the source directory to an absolute path without a trailing slash.
+for %%I in ("%SOURCE%\.") do set "SOURCE=%%~fI"
+for %%I in ("%OUTPUT%\.") do set "OUTPUT=%%~fI"
 set "BUILD=%SOURCE%\build-game"
 
 where cmake >nul 2>nul || (
@@ -16,6 +17,10 @@ where cmake >nul 2>nul || (
 )
 
 if exist "%BUILD%" rmdir /S /Q "%BUILD%"
+if exist "%BUILD%" (
+    echo ERROR: Could not remove the previous game build directory.
+    exit /b 1
+)
 
 cmake -S "%SOURCE%" -B "%BUILD%" -A x64 -DMC_BUILD_LAUNCHER=OFF -DMC_BUILD_GAME=ON
 if errorlevel 1 goto :error
