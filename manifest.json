@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": "0.1.9",
-  "source_commit": "965ec8dd590c8b217ef7d01918bdf5857543f128",
+  "version": "0.1.10",
+  "source_commit": "c306a0e6d645252d48d2854931ae1fa4dd8ec0e1",
   "channel_key_hash": "677b073a4aa1f56e0b23218903d1917e563f21a1cdf5a91df8951b568dae7d5e",
   "minimum_launcher_version": "1.0.0",
-  "signature": "CkvrvI2LNeb59lQ/y5so2yoitt6cBjsgI2R1/MzLf1+H+yNbUlZtnSFKosrNYa7AcTC87SvzyP4/djPQGne5al8Bnl0ie8NoyT8WA3HcrJLm6ks+zDnr+xmnUeJgTkpYYDDZ+LdrlrX/HkCw95jNpjLZAPPLnlxxg6FYy/5sHzd+s0FfzXowSUtFgW65eJYoMwkV51Fy5+e6e+GYc5tf5EjK2y1nTKyLN8MTpWkzjP00l+uF8nXgk8YWeNEoB2CwkO2RsVDYgpR6JiN1chBXTSOC3lzNxKzEYdwf6lCnHiUpcx+7SfaP/N54fyvquab0SlLhI8pVFKJV5lpllyHRmw=="
+  "signature": "a/9A5XRKwxEYty0maBBCgQf8zT+WdlBR8rAsXy08jHFgd7OGGqxh/SoQcWkMP5GowH4whNz8W+uPi1cH1kAoqaLHMLuN2athkSalxGWCu/UedK6lyg+8pI2m+vnIJQOu/Sqwep6+A6O5R++kScZAYH21s54O+rDqcGC2goCS4CakHAUEsTa/wxhpJNmyYf8a+EgnEL65/YpzPbBBtTQRscFIfgjQflTI9Scv6x03S4zlMb66IKzJ3Hk12tTB0CCVr5GwTJ92kdGq3IHLLep8yzKSnlpnei356r5q7avfcBcYtCMgANln86jvl4Iu1dZI3b3lCG55j+kxmj5FTvYR2Q=="
 }
