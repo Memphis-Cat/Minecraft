@@ -9,9 +9,10 @@ CMakeUserPresets.json
 *.VC.db
 *.VC.opendb
 
-# Legacy launcher runtime folders
+# Launcher runtime folders
 /source/
 /game/
+/logs/
 launcher-build.log
 
 # Local signing material (never commit these)
