@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "version": "0.1.0",
+  "source_commit": "REPLACE_WITH_40_CHARACTER_COMMIT_SHA",
+  "channel_key_hash": "677b073a4aa1f56e0b23218903d1917e563f21a1cdf5a91df8951b568dae7d5e",
+  "minimum_launcher_version": "1.0.0",
+  "signature": "REPLACE_WITH_RSA_PSS_SIGNATURE"
+}
