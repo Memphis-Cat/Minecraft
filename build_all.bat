@@ -6,18 +6,21 @@ for %%I in ("%~dp0.") do set "ROOT=%%~fI"
 set "BIN=%ROOT%\bin"
 set "LOG_DIR=%ROOT%\logs"
 set "BUILD_LOG=%LOG_DIR%\build.log"
+set "UPDATE_BUILD=%ROOT%\update-build-game"
 
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 > "%BUILD_LOG%" echo ============================================================
 >>"%BUILD_LOG%" echo Build started: %DATE% %TIME%
 >>"%BUILD_LOG%" echo Root: %ROOT%
 
-rem Remove the folder produced by older launchers that cloned inside bin.
+rem Remove generated folders from older launcher versions.
 if exist "%BIN%\source" (
     echo Removing legacy bin\source folder...
     >>"%BUILD_LOG%" echo Removing legacy folder: %BIN%\source
     rmdir /S /Q "%BIN%\source" >>"%BUILD_LOG%" 2>&1
 )
+if exist "%UPDATE_BUILD%" rmdir /S /Q "%UPDATE_BUILD%" >>"%BUILD_LOG%" 2>&1
+
 
 echo [1/4] Building launcher...
 call "%ROOT%\build_launcher.bat" >>"%BUILD_LOG%" 2>&1
@@ -30,6 +33,7 @@ if errorlevel 1 goto :error
 rem Remove every temporary CMake build folder and the old output layout.
 if exist "%ROOT%\build-launcher" rmdir /S /Q "%ROOT%\build-launcher" >>"%BUILD_LOG%" 2>&1
 if exist "%ROOT%\build-game" rmdir /S /Q "%ROOT%\build-game" >>"%BUILD_LOG%" 2>&1
+if exist "%UPDATE_BUILD%" rmdir /S /Q "%UPDATE_BUILD%" >>"%BUILD_LOG%" 2>&1
 if exist "%ROOT%\dist" rmdir /S /Q "%ROOT%\dist" >>"%BUILD_LOG%" 2>&1
 
 echo [3/4] Creating desktop shortcut...
@@ -61,6 +65,7 @@ set "EXIT_CODE=%ERRORLEVEL%"
 if "%EXIT_CODE%"=="0" set "EXIT_CODE=1"
 if exist "%ROOT%\build-launcher" rmdir /S /Q "%ROOT%\build-launcher" >>"%BUILD_LOG%" 2>&1
 if exist "%ROOT%\build-game" rmdir /S /Q "%ROOT%\build-game" >>"%BUILD_LOG%" 2>&1
+if exist "%UPDATE_BUILD%" rmdir /S /Q "%UPDATE_BUILD%" >>"%BUILD_LOG%" 2>&1
 >>"%BUILD_LOG%" echo ERROR: Full build failed with exit code %EXIT_CODE% at %DATE% %TIME%.
 echo.
 echo ERROR: Full build failed.
