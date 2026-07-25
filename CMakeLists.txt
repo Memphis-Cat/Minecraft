@@ -10,14 +10,18 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 foreach(config Debug Release RelWithDebInfo MinSizeRel)
     string(TOUPPER "${config}" config_upper)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${config_upper} "${CMAKE_BINARY_DIR}/bin/${config}")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${config_upper}
+        "${CMAKE_BINARY_DIR}/bin/${config}")
 endforeach()
 
 function(mc_windows_target target)
-    target_compile_definitions(${target} PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_compile_definitions(
+        ${target} PRIVATE UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX)
     if(MSVC)
-        target_compile_options(${target} PRIVATE /W4 /permissive- /EHsc /Zc:__cplusplus)
-        target_link_options(${target} PRIVATE /DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA)
+        target_compile_options(
+            ${target} PRIVATE /W4 /permissive- /EHsc /Zc:__cplusplus)
+        target_link_options(
+            ${target} PRIVATE /DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA)
     endif()
 endfunction()
 
@@ -45,6 +49,14 @@ if(MC_BUILD_GAME)
         game/World.cpp
         game/Renderer.cpp
     )
-    target_link_libraries(Minecraft PRIVATE mc_shared d3d11 dxgi d3dcompiler)
+    target_link_libraries(
+        Minecraft PRIVATE
+        mc_shared
+        d3d11
+        dxgi
+        d3dcompiler
+        windowscodecs
+        ole32
+    )
     mc_windows_target(Minecraft)
 endif()
