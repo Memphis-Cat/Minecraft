@@ -1,0 +1,19 @@
+# CMake / Visual Studio
+/build*/
+/dist/
+/.vs/
+CMakeUserPresets.json
+*.user
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Launcher runtime folders
+/source/
+/game/
+launcher-build.log
+
+# Local signing material (never commit these)
+*.pem
+*.key
+channel_secret.txt
