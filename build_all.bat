@@ -1,25 +1,26 @@
 @echo off
 setlocal EnableExtensions
 
-set "ROOT=%~dp0"
-set "BIN=%ROOT%bin"
+rem Normalize %~dp0 so no quoted argument ends with a trailing backslash.
+for %%I in ("%~dp0.") do set "ROOT=%%~fI"
+set "BIN=%ROOT%\bin"
 
-call "%ROOT%build_launcher.bat"
+call "%ROOT%\build_launcher.bat"
 if errorlevel 1 goto :error
 
-call "%ROOT%build_game.bat" "%ROOT%" "%BIN%"
+call "%ROOT%\build_game.bat" "%ROOT%" "%BIN%"
 if errorlevel 1 goto :error
 
 rem Remove every temporary CMake build folder and the old output layout.
-if exist "%ROOT%build-launcher" rmdir /S /Q "%ROOT%build-launcher"
-if exist "%ROOT%build-game" rmdir /S /Q "%ROOT%build-game"
-if exist "%ROOT%dist" rmdir /S /Q "%ROOT%dist"
+if exist "%ROOT%\build-launcher" rmdir /S /Q "%ROOT%\build-launcher"
+if exist "%ROOT%\build-game" rmdir /S /Q "%ROOT%\build-game"
+if exist "%ROOT%\dist" rmdir /S /Q "%ROOT%\dist"
 
 rem Stamp the freshly built game when this checkout matches the signed release.
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%ROOT%tools\install_local_manifest.ps1" -SourceDirectory "%ROOT%" -GameExecutable "%BIN%\Minecraft.exe" -OutputManifest "%BIN%\local_manifest.json"
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%ROOT%\tools\install_local_manifest.ps1" -SourceDirectory "%ROOT%" -GameExecutable "%BIN%\Minecraft.exe" -OutputManifest "%BIN%\local_manifest.json"
 if errorlevel 1 goto :error
 
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%ROOT%tools\create_shortcut.ps1" -Target "%BIN%\Launcher.exe" -WorkingDirectory "%BIN%" -Name "Minecraft Launcher"
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%ROOT%\tools\create_shortcut.ps1" -Target "%BIN%\Launcher.exe" -WorkingDirectory "%BIN%" -Name "Minecraft Launcher"
 if errorlevel 1 goto :error
 
 echo.
@@ -34,8 +35,8 @@ exit /b 0
 :error
 set "EXIT_CODE=%ERRORLEVEL%"
 if "%EXIT_CODE%"=="0" set "EXIT_CODE=1"
-if exist "%ROOT%build-launcher" rmdir /S /Q "%ROOT%build-launcher"
-if exist "%ROOT%build-game" rmdir /S /Q "%ROOT%build-game"
+if exist "%ROOT%\build-launcher" rmdir /S /Q "%ROOT%\build-launcher"
+if exist "%ROOT%\build-game" rmdir /S /Q "%ROOT%\build-game"
 echo.
 echo ERROR: Full build failed.
 exit /b %EXIT_CODE%
