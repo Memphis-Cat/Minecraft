@@ -15,6 +15,10 @@ if exist "%ROOT%build-launcher" rmdir /S /Q "%ROOT%build-launcher"
 if exist "%ROOT%build-game" rmdir /S /Q "%ROOT%build-game"
 if exist "%ROOT%dist" rmdir /S /Q "%ROOT%dist"
 
+rem Stamp the freshly built game when this checkout matches the signed release.
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%ROOT%tools\install_local_manifest.ps1" -SourceDirectory "%ROOT%" -GameExecutable "%BIN%\Minecraft.exe" -OutputManifest "%BIN%\local_manifest.json"
+if errorlevel 1 goto :error
+
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%ROOT%tools\create_shortcut.ps1" -Target "%BIN%\Launcher.exe" -WorkingDirectory "%BIN%" -Name "Minecraft Launcher"
 if errorlevel 1 goto :error
 
