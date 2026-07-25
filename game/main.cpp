@@ -5,6 +5,7 @@
 #include <shellapi.h>
 #include <DirectXMath.h>
 #include <chrono>
+#include <cmath>
 #include <filesystem>
 #include <string>
 
