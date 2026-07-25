@@ -13,16 +13,17 @@ Install Visual Studio 2022 with **Desktop development with C++**, the Windows SD
 build_all.bat
 ```
 
-The script builds both programs, copies them into one folder, removes the temporary CMake build folders, removes the legacy `dist` output, and creates a desktop shortcut named **Minecraft Launcher**.
+The script builds both programs, copies them into one folder, removes the temporary CMake build folders, removes the legacy `dist` output, records the local executable hash when the checkout matches the signed release, and creates a desktop shortcut named **Minecraft Launcher**.
 
 Outputs:
 
 ```text
 bin\Launcher.exe
 bin\Minecraft.exe
+bin\local_manifest.json
 ```
 
-Start the desktop shortcut or `bin\Launcher.exe`. Do not start `Minecraft.exe` directly.
+Start the desktop shortcut or `bin\Launcher.exe`. Do not start `Minecraft.exe` directly. When the checked-out Git commit matches the signed online release, the first launcher run validates the build and starts the game without rebuilding it.
 
 ## Launcher/update design
 
