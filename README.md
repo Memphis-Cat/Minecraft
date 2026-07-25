@@ -13,7 +13,7 @@ Install Visual Studio 2022 with **Desktop development with C++**, the Windows SD
 build_all.bat
 ```
 
-The script builds both programs, copies them into one folder, removes the temporary CMake build folders, removes the legacy `dist` output, records the local executable hash when the checkout matches the signed release, and creates a desktop shortcut named **Minecraft Launcher**.
+The script builds both programs, copies them into one folder, removes temporary CMake build folders, removes the legacy `dist` output, creates a desktop shortcut named **Minecraft Launcher**, and then attempts to record the local executable hash. Shortcut creation happens before online manifest stamping, so a temporary network problem cannot prevent the shortcut from being created.
 
 Outputs:
 
@@ -21,25 +21,55 @@ Outputs:
 bin\Launcher.exe
 bin\Minecraft.exe
 bin\local_manifest.json
+Desktop\Minecraft Launcher.lnk
 ```
 
-Start the desktop shortcut or `bin\Launcher.exe`. Do not start `Minecraft.exe` directly. When the checked-out Git commit matches the signed online release, the first launcher run validates the build and starts the game without rebuilding it.
+The complete build output is stored in:
 
-## Launcher/update design
+```text
+logs\build.log
+```
+
+Start the desktop shortcut or `bin\Launcher.exe`. Do not start `Minecraft.exe` directly.
+
+## Launcher/update layout
+
+Although `Launcher.exe` is inside `bin`, the launcher first resolves `bin\..` as the installation root. Runtime files are separated like this:
+
+```text
+Minecraft\
+├── bin\
+│   ├── Launcher.exe
+│   ├── Minecraft.exe
+│   └── local_manifest.json
+├── source\                 updater checkout
+└── logs\
+    ├── build.log
+    └── launcher.log
+```
+
+Older builds incorrectly created `bin\source`. The corrected build and launcher remove that generated legacy folder.
 
 The launcher silently downloads `manifest.json` from `main` over HTTPS. It validates the schema, channel-key hash, RSA-PSS/SHA-256 signature, minimum launcher version, local release fields, and local game SHA-256.
 
 When an update is needed, the launcher:
 
-1. Fetches the exact signed source commit.
-2. Performs a forced clean checkout in `bin\source`.
-3. Runs that source revision's `build_game.bat`.
-4. Places the rebuilt game at `bin\Minecraft.exe`.
-5. Removes the temporary `build-game` folder.
-6. Hashes the resulting executable and writes `bin\local_manifest.json`.
-7. Starts the game with a short-lived one-time launch ticket.
+1. Changes its logical root from `bin` to the parent installation folder.
+2. Fetches the exact signed source commit into `source` beside `bin`.
+3. Performs a forced clean checkout.
+4. Runs that source revision's `build_game.bat`.
+5. Places the rebuilt game at `bin\Minecraft.exe`.
+6. Removes the temporary `build-game` folder.
+7. Hashes the resulting executable and writes `bin\local_manifest.json`.
+8. Starts the game with a short-lived one-time launch ticket.
 
-It never rebuilds or replaces `Launcher.exe`. A launcher update must be built manually with `build_all.bat` or `build_launcher.bat`.
+Every path decision, manifest check, Git command, build command, command exit code, and fatal error is appended to:
+
+```text
+logs\launcher.log
+```
+
+Launcher error dialogs include the exact log path. It never rebuilds or replaces `Launcher.exe`. A launcher update must be built manually with `build_all.bat` or `build_launcher.bat`.
 
 A hash embedded in a public client is not a true secret. The channel hash is only channel binding; trust comes from the asymmetric signature. Keep the private signing key outside this repository. The launcher-only gate is practical launch policy, not unbreakable DRM: it uses a per-user DPAPI-protected install secret and a short-lived one-time HMAC ticket.
 
