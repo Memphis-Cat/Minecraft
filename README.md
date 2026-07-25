@@ -3,17 +3,17 @@
 This repository contains two Windows executables:
 
 - `Launcher.exe`: validates a signed GitHub manifest, checks the installed game hash, updates the source to the signed commit, builds only the game, and starts it with a one-time launch ticket.
-- `Minecraft.exe`: the Direct3D 11 voxel prototype. It refuses a normal direct launch when the one-time launcher ticket is absent, expired, reused, or invalid.
+- `Minecraft.exe`: the Direct3D 11 voxel game. It refuses a normal direct launch when the one-time launcher ticket is absent, expired, reused, or invalid.
 
 ## Build
 
-Install Visual Studio 2022 with **Desktop development with C++**, the Windows SDK, Git, CMake, and Windows PowerShell. Run:
+Install Visual Studio with **Desktop development with C++**, the Windows SDK, Git, CMake, and Windows PowerShell. Run:
 
 ```bat
 build_all.bat
 ```
 
-The script builds both programs, copies them into one folder, removes temporary CMake build folders, removes the legacy `dist` output, creates a desktop shortcut named **Minecraft Launcher**, and then attempts to record the local executable hash. Shortcut creation happens before online manifest stamping, so a temporary network problem cannot prevent the shortcut from being created.
+The script builds both programs, copies them into one folder, packages the texture assets, removes temporary CMake build folders, creates a desktop shortcut named **Minecraft Launcher**, and attempts to record the local executable hash.
 
 Outputs:
 
@@ -21,61 +21,37 @@ Outputs:
 bin\Launcher.exe
 bin\Minecraft.exe
 bin\local_manifest.json
+bin\assets\textures\blocks\...
 Desktop\Minecraft Launcher.lnk
 ```
 
-The complete build output is stored in:
-
-```text
-logs\build.log
-```
-
-Start the desktop shortcut or `bin\Launcher.exe`. Do not start `Minecraft.exe` directly.
+The complete build output is stored in `logs\build.log`. Start the desktop shortcut or `bin\Launcher.exe`; do not start `Minecraft.exe` directly.
 
 ## Launcher/update layout
 
-Although `Launcher.exe` is inside `bin`, the launcher first resolves `bin\..` as the installation root. Runtime files are separated like this:
+Although `Launcher.exe` is inside `bin`, the launcher resolves `bin\..` as the installation root:
 
 ```text
 Minecraft\
 ├── bin\
 │   ├── Launcher.exe
 │   ├── Minecraft.exe
-│   └── local_manifest.json
+│   ├── local_manifest.json
+│   └── assets\
 ├── source\                 updater checkout
+├── update-build-game\      temporary updater build
 └── logs\
     ├── build.log
     └── launcher.log
 ```
 
-Older builds incorrectly created `bin\source`. The corrected build and launcher remove that generated legacy folder.
+The launcher validates the signed online manifest, fetches the exact source commit when required, builds into an isolated updater build folder, copies `Minecraft.exe` and the assets into `bin`, writes the local executable hash, and starts the game with a short-lived one-time launch ticket. A named single-instance lock prevents overlapping launcher updates.
 
-The launcher silently downloads `manifest.json` from `main` over HTTPS. It validates the schema, channel-key hash, RSA-PSS/SHA-256 signature, minimum launcher version, local release fields, and local game SHA-256.
+Every path decision, manifest check, Git command, build command, exit code, and fatal error is appended to `logs\launcher.log`. The launcher never rebuilds or replaces itself.
 
-When an update is needed, the launcher:
+A hash embedded in a public client is not a true secret. The channel hash is only channel binding; trust comes from the asymmetric signature. Keep the private signing key outside this repository. The launcher-only gate is practical launch policy, not unbreakable DRM.
 
-1. Changes its logical root from `bin` to the parent installation folder.
-2. Fetches the exact signed source commit into `source` beside `bin`.
-3. Performs a forced clean checkout.
-4. Runs that source revision's `build_game.bat`.
-5. Places the rebuilt game at `bin\Minecraft.exe`.
-6. Removes the temporary `build-game` folder.
-7. Hashes the resulting executable and writes `bin\local_manifest.json`.
-8. Starts the game with a short-lived one-time launch ticket.
-
-Every path decision, manifest check, Git command, build command, command exit code, and fatal error is appended to:
-
-```text
-logs\launcher.log
-```
-
-Launcher error dialogs include the exact log path. It never rebuilds or replaces `Launcher.exe`. A launcher update must be built manually with `build_all.bat` or `build_launcher.bat`.
-
-A hash embedded in a public client is not a true secret. The channel hash is only channel binding; trust comes from the asymmetric signature. Keep the private signing key outside this repository. The launcher-only gate is practical launch policy, not unbreakable DRM: it uses a per-user DPAPI-protected install secret and a short-lived one-time HMAC ticket.
-
-## Voxel prototype
-
-World layers:
+## World
 
 ```text
 y = 9       grass block
@@ -84,13 +60,38 @@ y = 1..5    5 stone blocks
 y = 0       unbreakable bedrock
 ```
 
-Implemented: 16x32x16 chunks, exposed-face meshing, chunk-distance and camera-frustum culling, one GPU buffer per changed visible chunk, grass-top/grass-side/dirt/stone/bedrock atlas tiles, requested temperature/humidity tint formula, DDA raycast, strict 4.5-block breaking reach, and remeshing only the edited chunk plus immediate neighbors.
+Implemented: 16x32x16 chunks, exposed-face meshing, chunk-distance and camera-frustum culling, one GPU buffer per changed visible chunk, DDA raycasting, strict 4.5-block breaking reach, and remeshing only the edited chunk plus immediate neighbors.
 
-The first game milestone uses noclip movement so the launcher, update integrity, chunk system, culling, meshing, and raycast can be tested before collision, persistence, terrain noise, greedy meshing, occlusion queries, and multithreaded streaming.
+## Texture assets and grass color
+
+The renderer loads the real PNG files from `bin\assets\textures\blocks` through Windows Imaging Component instead of generating placeholder colors.
+
+- Grass top: `grass_top.png`
+- Grass sides: `grass_side.png`
+- Dirt: `dirt.png`
+- Bedrock: `bedrock.png`
+- Grass climate map: `grass.png` (256x256)
+- Stone: `stone.png` when present; a deterministic gray fallback is used until that file is added
+
+Grass tint uses the requested Minecraft lookup:
+
+```cpp
+temperature = clamp(temperature, 0.0, 1.0);
+humidity = clamp(humidity, 0.0, 1.0);
+adjusted_humidity = humidity * temperature;
+int pixelX = (int)((1.0 - temperature) * 255.0);
+int pixelY = (int)((1.0 - adjusted_humidity) * 255.0);
+```
+
+The shader samples that exact pixel from `grass.png`. The whole grayscale grass top is tinted. On `grass_side.png`, only green-dominant grass pixels receive the climate tint; the dirt portion remains unchanged.
+
+## Player movement
+
+Noclip has been removed. The player now has a 0.6-block-wide, 1.8-block-tall collision box, a 1.62-block eye height, gravity, terminal velocity, grounded jumping, and axis-separated collision against solid blocks.
 
 ## Controls
 
-Mouse look; W/A/S/D move; Space/Ctrl move vertically; Shift moves faster; left click breaks within 4.5 blocks; Escape quits.
+Mouse look; W/A/S/D walk; Shift sprints; Space jumps; left click breaks a block within 4.5 blocks; Escape quits.
 
 ## Signing a release
 
