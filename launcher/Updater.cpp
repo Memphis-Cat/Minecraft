@@ -34,7 +34,12 @@ std::filesystem::path FindExecutable(const wchar_t* name) {
 }
 }
 
-Updater::Updater(std::filesystem::path launcherRoot) : root_(std::move(launcherRoot)), sourceDir_(root_ / L"source"), gameDir_(root_ / L"game"), gameExe_(gameDir_ / L"Minecraft.exe"), localManifest_(gameDir_ / L"local_manifest.json") {}
+Updater::Updater(std::filesystem::path launcherRoot)
+    : root_(std::move(launcherRoot)),
+      sourceDir_(root_ / L"source"),
+      gameDir_(root_),
+      gameExe_(root_ / L"Minecraft.exe"),
+      localManifest_(root_ / L"local_manifest.json") {}
 
 std::wstring Updater::HttpGet(const std::wstring& url) const {
     URL_COMPONENTS parts{ sizeof(parts) }; wchar_t host[256]{}, path[4096]{}; parts.lpszHostName = host; parts.dwHostNameLength = std::size(host); parts.lpszUrlPath = path; parts.dwUrlPathLength = std::size(path);
