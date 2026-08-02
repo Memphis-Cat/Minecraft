@@ -11,10 +11,6 @@ The implementation deliberately clamps queries to the current cube instead of
 the dimension height. Cubes are sparse world units; a range outside this cube
 contains no blocks owned by this cube and is therefore empty.
 ---
- .../cubicchunks/world/level/cube/CubeAccess.java   | 39 +++++++++++++--
- .../test/world/level/cube/TestCubeAccess.java      | 55 ++++++++++++++++++++++
- 2 files changed, 91 insertions(+), 3 deletions(-)
-
 diff --git a/src/main/java/io/github/opencubicchunks/cubicchunks/world/level/cube/CubeAccess.java b/src/main/java/io/github/opencubicchunks/cubicchunks/world/level/cube/CubeAccess.java
 index 34400c5..1111111 100644
 --- a/src/main/java/io/github/opencubicchunks/cubicchunks/world/level/cube/CubeAccess.java
@@ -75,14 +71,16 @@ index eb91966..2222222 100644
  import static org.mockito.Mockito.mock;
  
  import java.util.HashSet;
-@@ -13,6 +15,7 @@ import io.github.opencubicchunks.cc_core.utils.Coords;
+@@ -13,9 +15,10 @@ import io.github.opencubicchunks.cc_core.utils.Coords;
  import io.github.opencubicchunks.cubicchunks.testutils.BaseTest;
  import io.github.opencubicchunks.cubicchunks.world.level.cube.CubeAccess;
  import net.minecraft.core.BlockPos;
-+import net.minecraft.core.SectionPos;
  import net.minecraft.core.HolderLookup;
  import net.minecraft.core.Registry;
++import net.minecraft.core.SectionPos;
  import net.minecraft.nbt.CompoundTag;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.level.LevelHeightAccessor;
 @@ -132,4 +135,56 @@ public class TestCubeAccess extends BaseTest {
              findBlocks(random);
          }
@@ -108,6 +106,7 @@ index eb91966..2222222 100644
 +        assertTrue(cubeAccess.isSectionEmpty(cubeMaxSectionY + 1));
 +        assertTrue(cubeAccess.isYSpaceEmpty(Integer.MIN_VALUE, cubeMinY - 1));
 +        assertTrue(cubeAccess.isYSpaceEmpty(cubeMaxY + 1, Integer.MAX_VALUE));
++        assertTrue(cubeAccess.isYSpaceEmpty(cubeMaxY, cubeMinY));
 +
 +        int occupiedLocalSectionY = CubicConstants.DIAMETER_IN_SECTIONS / 2;
 +        int occupiedSectionY = cubeMinSectionY + occupiedLocalSectionY;
