@@ -1,0 +1,100 @@
+From e23e0e42b550ed0ba653b5460350193cd84403c0 Mon Sep 17 00:00:00 2001
+From: Memphis-Cat CubicChunks3 Workspace <noreply@local>
+Date: Sun, 2 Aug 2026 18:40:00 +0100
+Subject: [PATCH] Run CubicChunks3 CI on Java 21
+
+The Gradle build explicitly uses a Java 21 toolchain, while all active GitHub
+workflows install Java 17 through the obsolete setup-java v1 action. Update the
+build and test jobs to Temurin 21, initialize the CubicChunksCore submodule via
+checkout, and validate pushes to the active dev branch.
+---
+diff --git a/.github/workflows/gradleBuild.yml b/.github/workflows/gradleBuild.yml
+index 35891bc..3333333 100644
+--- a/.github/workflows/gradleBuild.yml
++++ b/.github/workflows/gradleBuild.yml
+@@ -4,6 +4,7 @@ on:
+   push:
+     branches:
++      - dev
+       - '[0-9]+.[0-9]+.[0-9]+'
+ 
+ jobs:
+@@ -11,7 +12,10 @@ jobs:
+     runs-on: ubuntu-latest
+     steps:
+-      - uses: actions/checkout@v4
++      - name: Check out sources
++        uses: actions/checkout@v4
++        with:
++          submodules: recursive
+       - uses: actions/cache@v4
+         with:
+           path: |
+@@ -20,11 +24,11 @@ jobs:
+           restore-keys: |
+             ${{ runner.os }}-gradle-
+-      - name: Set up git submodules
+-        run: git submodule init && git submodule update
+-      - name: Set up JDK 17
+-        uses: actions/setup-java@v1
++      - name: Set up JDK 21
++        uses: actions/setup-java@v4
+         with:
+-          java-version: 17
++          distribution: temurin
++          java-version: 21
+ 
+       - name: Build with Gradle
+         run: ./gradlew build -x test
+diff --git a/.github/workflows/gradleBuildPR.yml b/.github/workflows/gradleBuildPR.yml
+index a53ae2d..4444444 100644
+--- a/.github/workflows/gradleBuildPR.yml
++++ b/.github/workflows/gradleBuildPR.yml
+@@ -7,7 +7,10 @@ jobs:
+     name: build-pr
+     runs-on: ubuntu-latest
+     steps:
+-      - uses: actions/checkout@v4
++      - name: Check out sources
++        uses: actions/checkout@v4
++        with:
++          submodules: recursive
+       - uses: actions/cache@v4
+         with:
+           path: |
+@@ -16,11 +19,11 @@ jobs:
+           restore-keys: |
+             ${{ runner.os }}-gradle-
+-      - name: Set up git submodules
+-        run: git submodule init && git submodule update
+-      - name: Set up JDK 17
+-        uses: actions/setup-java@v1
++      - name: Set up JDK 21
++        uses: actions/setup-java@v4
+         with:
+-          java-version: 17
++          distribution: temurin
++          java-version: 21
+ 
+       - name: Build with Gradle
+         run: ./gradlew build -x test
+diff --git a/.github/workflows/testJob.yml b/.github/workflows/testJob.yml
+index 1114319..5555555 100644
+--- a/.github/workflows/testJob.yml
++++ b/.github/workflows/testJob.yml
+@@ -14,10 +14,11 @@ jobs:
+ 
+     steps:
+-      - name: Set up JDK 17
+-        uses: actions/setup-java@v1
++      - name: Set up JDK 21
++        uses: actions/setup-java@v4
+         with:
+-          java-version: 17
++          distribution: temurin
++          java-version: 21
+ 
+       - name: Download post-build state
+         uses: actions/download-artifact@v4
+-- 
+2.50.1
